@@ -1,3 +1,4 @@
+use super::phase::Phase;
 use anyhow::Result;
 use chrono::prelude::*;
 use serde::{Deserialize, Serialize};
@@ -19,7 +20,9 @@ pub struct ProjectRequest {
 
 impl Project {
     pub async fn all(pool: &PgPool) -> Result<Vec<Project>> {
-        let records = sqlx::query!("SELECT * FROM projects ORDER BY date_created DESC").fetch_all(pool).await?;
+        let records = sqlx::query!("SELECT * FROM projects ORDER BY date_created DESC")
+            .fetch_all(pool)
+            .await?;
 
         let mut projects = Vec::new();
         for rec in records {
@@ -34,10 +37,26 @@ impl Project {
         Ok(projects)
     }
 
+    pub async fn get(id: i32, pool: &PgPool) -> Result<Project> {
+        let record = sqlx::query!("SELECT * FROM projects WHERE id=$1", id)
+            .fetch_one(pool)
+            .await?;
+        Ok(Project {
+            id: record.id,
+            name: record.name,
+            description: record.description,
+            date_created: record.date_created,
+        })
+    }
+
     pub async fn create(project: ProjectRequest, pool: &PgPool) -> Result<Project> {
-        let record = sqlx::query!("INSERT INTO projects (name, description) VALUES ($1, $2) RETURNING *",
+        let record = sqlx::query!(
+            "INSERT INTO projects (name, description) VALUES ($1, $2) RETURNING *",
             project.name,
-            project.description).fetch_one(pool).await?;
+            project.description
+        )
+        .fetch_one(pool)
+        .await?;
 
         Ok(Project {
             id: record.id,
@@ -48,10 +67,14 @@ impl Project {
     }
 
     pub async fn update(id: i32, project: ProjectRequest, pool: &PgPool) -> Result<Project> {
-        let record = sqlx::query!("UPDATE projects SET name=$1, description=$2 WHERE id=$3 RETURNING *",
+        let record = sqlx::query!(
+            "UPDATE projects SET name=$1, description=$2 WHERE id=$3 RETURNING *",
             project.name,
             project.description,
-            id).fetch_one(pool).await?;
+            id
+        )
+        .fetch_one(pool)
+        .await?;
 
         Ok(Project {
             id: record.id,
@@ -61,8 +84,33 @@ impl Project {
         })
     }
 
-    pub async fn delete(id:i32, pool: &PgPool)->Result<()> {
-        sqlx::query!("DELETE FROM projects WHERE id=$1", id).execute(pool).await?;
+    pub async fn delete(id: i32, pool: &PgPool) -> Result<()> {
+        sqlx::query!("DELETE FROM projects WHERE id=$1", id)
+            .execute(pool)
+            .await?;
         Ok(())
+    }
+
+    pub async fn phases(&self, pool: &PgPool) -> Result<Vec<Phase>> {
+        let records = sqlx::query!(
+            "SELECT * FROM phases WHERE project_id=$1 ORDER BY deadline DESC",
+            self.id
+        )
+        .fetch_all(pool)
+        .await?;
+
+        let mut phases = Vec::new();
+        for rec in records {
+            phases.push(Phase {
+                id: rec.id,
+                project_id: rec.project_id,
+                name: rec.name,
+                description: rec.description,
+                deadline: rec.deadline,
+                date_created: rec.date_created,
+            });
+        }
+
+        Ok(phases)
     }
 }
