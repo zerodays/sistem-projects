@@ -3,12 +3,18 @@ use chrono::prelude::*;
 use serde::{Deserialize, Serialize};
 use sqlx::PgPool;
 
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Debug)]
 pub struct Project {
     pub id: i32,
     pub name: String,
     pub description: String,
     pub date_created: chrono::DateTime<Utc>,
+}
+
+#[derive(Deserialize, Debug)]
+pub struct ProjectRequest {
+    pub name: String,
+    pub description: String,
 }
 
 impl Project {
@@ -26,5 +32,37 @@ impl Project {
         }
 
         Ok(projects)
+    }
+
+    pub async fn create(project: ProjectRequest, pool: &PgPool) -> Result<Project> {
+        let record = sqlx::query!("INSERT INTO projects (name, description) VALUES ($1, $2) RETURNING *",
+            project.name,
+            project.description).fetch_one(pool).await?;
+
+        Ok(Project {
+            id: record.id,
+            name: record.name,
+            description: record.description,
+            date_created: record.date_created,
+        })
+    }
+
+    pub async fn update(id: i32, project: ProjectRequest, pool: &PgPool) -> Result<Project> {
+        let record = sqlx::query!("UPDATE projects SET name=$1, description=$2 WHERE id=$3 RETURNING *",
+            project.name,
+            project.description,
+            id).fetch_one(pool).await?;
+
+        Ok(Project {
+            id: record.id,
+            name: record.name,
+            description: record.description,
+            date_created: record.date_created,
+        })
+    }
+
+    pub async fn delete(id:i32, pool: &PgPool)->Result<()> {
+        sqlx::query!("DELETE FROM projects WHERE id=$1", id).execute(pool).await?;
+        Ok(())
     }
 }
