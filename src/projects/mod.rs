@@ -1,5 +1,3 @@
-mod routes;
-mod model;
+pub mod routes;
+pub mod models;
 
-pub use routes::*;
-pub use model::*;
