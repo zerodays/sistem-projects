@@ -16,9 +16,6 @@ async fn main() -> Result<()> {
     );
 
     let db_pool = PgPool::connect(&database_url).await?;
-    sqlx::migrate!("./migrations").run(&db_pool).await?;
-
-    projects::models::project::Project::all(&db_pool).await?;
 
     HttpServer::new(move || {
         App::new()

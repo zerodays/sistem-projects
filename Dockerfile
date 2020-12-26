@@ -1,7 +1,7 @@
 FROM debian:buster
 
 # Get certificates.
-RUN apt-get update && apt-get install -y --no-install-recommends ca-certificates
+RUN apt-get update && apt-get install -y --no-install-recommends ca-certificates libssl1.1
 RUN update-ca-certificates
 
 # Copy executable
