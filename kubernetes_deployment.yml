@@ -1,0 +1,51 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: sistem-projects-deployment
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: sistem-projects
+  template:
+    metadata:
+      labels:
+        app: sistem-projects
+    spec:
+      containers:
+        - image: zdays/sistem-projects:latest
+          name: sistem-projects
+          env:
+            - name: SISTEM_PROJECTS_DATABASE_HOST
+              value: db.recompile.it
+            - name: SISTEM_PROJECTS_DATABASE_DB_NAME
+              value: sistem_projects
+            - name: SISTEM_PROJECTS_DATABASE_USER
+              valueFrom:
+                secretKeyRef:
+                  name: sistem-db
+                  key: username
+            - name: SISTEM_PROJECTS_DATABASE_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: sistem-db
+                  key: password
+          ports:
+            - containerPort: 8080
+              name: server
+              protocol: TCP
+
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: sistem-projects
+spec:
+  type: LoadBalancer
+  ports:
+    - port: 80
+      protocol: TCP
+      targetPort: server
+  selector:
+    app: sistem-projects
