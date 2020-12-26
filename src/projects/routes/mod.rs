@@ -3,6 +3,7 @@ use actix_web::web;
 mod phases;
 mod projects;
 mod tasks;
+mod users;
 
 pub fn init(cfg: &mut web::ServiceConfig) {
     let api_v1 = web::scope("/api/v1")
@@ -15,7 +16,9 @@ pub fn init(cfg: &mut web::ServiceConfig) {
         .service(phases::update)
         .service(phases::delete)
         .service(tasks::all)
-        .service(tasks::set);
+        .service(tasks::set)
+        .service(users::set)
+        .service(users::all);
 
     cfg.service(api_v1);
 }

@@ -1,4 +1,5 @@
 use super::phase::Phase;
+use crate::projects::models::user::User;
 use anyhow::Result;
 use chrono::prelude::*;
 use serde::{Deserialize, Serialize};
@@ -112,5 +113,12 @@ impl Project {
         }
 
         Ok(phases)
+    }
+
+    pub async fn users(&self, pool: &PgPool) -> Result<Vec<User>> {
+        let users = sqlx::query_as!(User, "SELECT * FROM users WHERE project_id=$1", self.id)
+            .fetch_all(pool)
+            .await?;
+        Ok(users)
     }
 }
