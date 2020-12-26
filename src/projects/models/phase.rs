@@ -4,6 +4,7 @@ use serde::{Deserialize, Serialize};
 use sqlx::PgPool;
 
 use super::project::Project;
+use crate::projects::models::task::Task;
 
 #[derive(Serialize, Debug)]
 pub struct Phase {
@@ -23,6 +24,19 @@ pub struct PhaseRequest {
 }
 
 impl Phase {
+    pub async fn get(project: &Project, id: i32, pool: &PgPool) -> Result<Phase> {
+        let r = sqlx::query_as!(
+            Phase,
+            "SELECT * FROM phases WHERE project_id=$1 AND id=$2",
+            project.id,
+            id
+        )
+        .fetch_one(pool)
+        .await?;
+
+        Ok(r)
+    }
+
     pub async fn create(project: &Project, phase: PhaseRequest, pool: &PgPool) -> Result<Phase> {
         let r = sqlx::query_as!(Phase, "INSERT INTO phases (project_id, name, description, deadline) VALUES ($1, $2, $3, $4) RETURNING *",
             project.id,
@@ -51,5 +65,17 @@ impl Phase {
             .execute(pool)
             .await?;
         Ok(())
+    }
+
+    pub async fn tasks(&self, pool: &PgPool) -> Result<Vec<Task>> {
+        let res = sqlx::query_as!(
+            Task,
+            "SELECT * FROM tasks WHERE phase_id=$1 ORDER BY index",
+            self.id
+        )
+        .fetch_all(pool)
+        .await?;
+
+        Ok(res)
     }
 }

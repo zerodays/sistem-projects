@@ -22,14 +22,12 @@ CREATE TABLE phases
 
 CREATE TABLE tasks
 (
-    id           SERIAL PRIMARY KEY,
-    phase_id     INTEGER REFERENCES phases (id) ON DELETE CASCADE   NOT NULL,
+    id          SERIAL PRIMARY KEY,
+    phase_id    INTEGER REFERENCES phases (id) ON DELETE CASCADE NOT NULL,
 
-    index        INTEGER                  DEFAULT 0                 NOT NULL,
+    index       INTEGER DEFAULT 0                                NOT NULL,
 
-    name         TEXT                                               NOT NULL,
-    description  TEXT                                               NOT NULL,
-    completed    BOOLEAN                  DEFAULT FALSE             NOT NULL,
-
-    date_created TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP NOT NULL
+    name        TEXT                                             NOT NULL,
+    description TEXT                                             NOT NULL,
+    completed   BOOLEAN DEFAULT FALSE                            NOT NULL
 );
