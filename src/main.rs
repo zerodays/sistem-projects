@@ -1,4 +1,4 @@
-use actix_web::middleware::cors::Cors;
+use actix_web::middleware::DefaultHeaders;
 use actix_web::{App, HttpServer};
 use anyhow::Result;
 use sqlx::PgPool;
@@ -20,21 +20,10 @@ async fn main() -> Result<()> {
 
     HttpServer::new(move || {
         App::new()
-            .configure(|app| {
-                Cors::for_app(app)
-                    .allowed_origin("*")
-                    .allowd_methods(vec!["GET", "POST", "PUT", "DELETE", "OPTIONS"])
-                    .allowed_headers(vec![
-                        "DNT",
-                        "User-Agent",
-                        "X-Requested-With",
-                        "If-Modified-Since",
-                        "Cache-Control",
-                        "Content-Type",
-                        "Range",
-                        "Authorization",
-                    ])
-            })
+            .wrap(DefaultHeaders::new()
+                .header("Access-Control-Allow-Origin", "*")
+                .header("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS")
+                .header("Access-Control-Allow-Headers", "DNT,User-Agent,X-Requested-With,If-Modified-Since,Cache-Control,Content-Type,Range,Authorization"))
             .data(db_pool.clone())
             .configure(projects::routes::init)
     })
