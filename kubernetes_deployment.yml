@@ -18,7 +18,7 @@ spec:
           env:
             - name: SISTEM_PROJECTS_DATABASE_HOST
               value: db.recompile.it
-            - name: SISTEM_PROJECTS_DATABASE_DB_NAME
+            - name: SISTEM_PROJECTS_DATABASE_NAME
               value: sistem_projects
             - name: SISTEM_PROJECTS_DATABASE_USER
               valueFrom:
@@ -44,7 +44,7 @@ metadata:
 spec:
   type: LoadBalancer
   ports:
-    - port: 80
+    - port: 8080
       protocol: TCP
       targetPort: server
   selector:
